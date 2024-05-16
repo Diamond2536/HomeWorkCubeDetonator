@@ -18,7 +18,7 @@ public abstract class CubeSpawner : MonoBehaviour
         return Random.ColorHSV();
     }
 
-    protected virtual List<Cube> SpawnCubes(Vector3 position)
+    public List<Cube> SpawnCubes(Vector3 position)
     {
         List<Cube> spawnedCubes = new List<Cube>();
 

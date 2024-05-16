@@ -4,18 +4,14 @@ using UnityEngine;
 public class Detonator : MonoBehaviour
 {
     private Camera _mainCamera;
-
     private int _leftMouseButton = 0;
 
     [SerializeField] private FragmentCubeSpawner _fragmentCubeSpawner;
-
     [SerializeField] private float _radius;
     [SerializeField] private float _explosionForce;
 
     private float _splitChance = 1f;
     private float _splitFactor = 0.5f;
-
-    private List<Cube> _cubeList = new List<Cube>();
 
     private void Start()
     {
@@ -36,28 +32,24 @@ public class Detonator : MonoBehaviour
 
                 if (hit.collider.TryGetComponent(out hitCube))
                 {
-                    Vector3 hitCubePosition = hitCube.transform.position;
-                    var newCubes = _fragmentCubeSpawner.SpawnFragmentedCubes(hitCubePosition);
-                    foreach (var cube in newCubes)
+                    if (Random.value <= _splitChance)
                     {
-                        _cubeList.Add(cube);
+                        Vector3 hitCubePosition = hitCube.transform.position;
+                        Explode(hitCubePosition, _fragmentCubeSpawner.SpawnFragmentedCubes(hitCubePosition));
+                        Destroy(hitCube.gameObject);
+                        _splitChance *= _splitFactor;
                     }
 
-                    Destroy(hitCube.gameObject);
-                    Explode(hitCubePosition);
-
-                    foreach (var cube in newCubes)
+                    else
                     {
-                        _cubeList.Remove(cube);
+                        Destroy(hitCube.gameObject);
                     }
-
-                    _splitChance *= _splitFactor;
                 }
             }
         }
     }
 
-    private void Explode(Vector3 center)
+    private void Explode(Vector3 center, List<Cube> cubesToExplode)
     {
         Collider[] colliders = Physics.OverlapSphere(center, _radius);
 
@@ -65,19 +57,11 @@ public class Detonator : MonoBehaviour
         {
             if (hit.TryGetComponent(out Rigidbody rigidBody))
             {
-                foreach (Cube cube in _cubeList)
+                foreach (Cube cube in cubesToExplode)
                 {
                     if (hit.gameObject == cube.gameObject)
                     {
-                        if (Random.value <= _splitChance)
-                        {
-                            rigidBody.AddExplosionForce(_explosionForce, center, _radius);
-                        }
-                        else
-                        {
-                            Destroy(cube.gameObject);
-                        }
-                        break;
+                        rigidBody.AddExplosionForce(_explosionForce, center, _radius);
                     }
                 }
             }
