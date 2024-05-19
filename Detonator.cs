@@ -11,8 +11,6 @@ public class Detonator : MonoBehaviour
 
     private int _leftMouseButton = 0;
 
-    private float _splitChance = 1f;
-    private float _splitFactor = 0.5f;
     private float _scaleFactor = 0.5f;
 
     private void Start()
@@ -36,17 +34,15 @@ public class Detonator : MonoBehaviour
             {
                 if (hit.collider.TryGetComponent(out Cube hitCube))
                 {
-                    if (Random.value <= _splitChance)
+                    float splitChance = hitCube.GetSplitChance();
+
+                    if (Random.value <= splitChance)
                     {
                         Vector3 hitCubePosition = hitCube.transform.position;
-                        Explode(hitCubePosition, _cubeSpawner.SpawnCubes(hitCubePosition));
-                        Destroy(hitCube.gameObject);
-                        _splitChance *= _splitFactor;
+                        Explode(hitCubePosition, _cubeSpawner.SpawnCubes(hitCubePosition, splitChance));
                     }
-                    else
-                    {
-                        Destroy(hitCube.gameObject);
-                    }
+
+                    Destroy(hitCube.gameObject);
                 }
             }
         }

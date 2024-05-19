@@ -10,13 +10,15 @@ public class CubeSpawner : MonoBehaviour
     [SerializeField] private bool _fragmentOnSpawn = false;
     [SerializeField] private float _scaleFactor = 0.5f;
 
+    private const float InitialSplitChance = 1.0f;
+
     private void Start()
     {
         if (_spawnOnStart)
         {
-            SpawnCubes(transform.position);
+            SpawnCubes(transform.position, InitialSplitChance);
         }
-    }    
+    }
 
     public void SetFragmentOnSpawn(bool value)
     {
@@ -28,14 +30,14 @@ public class CubeSpawner : MonoBehaviour
         _scaleFactor = value;
     }
 
-    public List<Cube> SpawnCubes(Vector3 position)
+    public List<Cube> SpawnCubes(Vector3 position, float parentSplitChance)
     {
         List<Cube> spawnedCubes = new List<Cube>();
         int cubesAmount = GetCubesQuantity();
 
         for (int i = 0; i < cubesAmount; i++)
         {
-            Cube cube = SpawnCube(position);
+            Cube cube = SpawnCube(position, parentSplitChance);
             spawnedCubes.Add(cube);
         }
 
@@ -47,23 +49,18 @@ public class CubeSpawner : MonoBehaviour
         return Random.Range(_minCubesQuantity, _maxCubesQuantity);
     }
 
-    private Color RandomizeCubesColor()
+    private Cube SpawnCube(Vector3 position, float parentSplitChance)
     {
-        return Random.ColorHSV();
-    }
-
-    private Cube SpawnCube(Vector3 position)
-    {
-        Color color = RandomizeCubesColor();
         Cube cube = Instantiate(_cubeTemplate, position, Quaternion.identity);
-        Renderer cubeRenderer = cube.GetComponent<Renderer>();
-        cubeRenderer.material.color = color;
+        cube.RandomizeColor();
 
         if (_fragmentOnSpawn)
         {
             cube.transform.localScale *= _scaleFactor;
         }
 
+        cube.SetSplitChance(parentSplitChance * _scaleFactor);
+
         return cube;
-    }    
+    }
 }
